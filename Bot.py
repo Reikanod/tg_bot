@@ -1,28 +1,25 @@
-import redis
+import telebot
+import lxml.html
+from lxml import etree
+import requests
 
-red = redis.Redis(host='127.0.0.1', port=6379)
+tree = etree.parse('Lenta.ru - Новости России и мира сегодня.html', lxml.html.HTMLParser())
 
-print('''get Имя - получить номер
-set Имя, номер(без пробелов) - внести номер
-del Имя - удалить номер
-stop - остановить программу''')
+main_block = tree.findall('.//*[@id="body"]/div[3]/div[3]/main/div[2]/section[1]/div[1]/div[1]')
+for div in main_block:
+    for a in div:
+        print(a.text.encode('utf-8'))
 
-while True:
-    text = input("Введите команду: ")
-    text = text.strip()
-    text = text.lower()
-    text = text.split()
-    match text[0]:
-        case "get":
-            print(red.get(text[1]))
-            continue
-        case "set":
-            red.set(text[1], text[2])
-            continue
-        case 'del':
-            red.delete(text[0])
-        case 'stop':
-            break
-        case _:
-            print("неверно введена команда")
-            continue
+
+'''
+with open(r'D:\Work\Python\MyData\ReikanodBot_token.txt', 'r') as token:
+    bot = telebot.TeleBot(token.read())
+
+
+@bot.message_handler(content_types=['photo'])
+def start(message):
+    bot.reply_to(message, "Nice meme XDD")
+
+
+bot.polling(none_stop=True, interval=0)
+'''
