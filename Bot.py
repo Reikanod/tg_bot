@@ -24,12 +24,11 @@ def start_func(message):
 /currencies - список всех доступных для конвертации валют'''
     bot.reply_to(message, text)
 
-@bot.message_handler(commands=['currencies'])
+@bot.message_handler(commands=['currencies', 'values'])
 def show_suppurted_currencies(message):
     text = 'Доступные для конвертации валюты:'
     for key in currencies:
         text += "\n" + key.capitalize() + ": " + currencies[key]
-
     bot.reply_to(message, text)
 
 
