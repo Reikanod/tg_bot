@@ -1,25 +1,37 @@
 import telebot
-import lxml.html
-from lxml import etree
-import requests
 
-tree = etree.parse('Lenta.ru - Новости России и мира сегодня.html', lxml.html.HTMLParser())
+with open(r'G:\Study\Py projects\token_reikanod_bot.txt', 'r') as file:
+    TOKEN = file.read()
 
-main_block = tree.findall('.//*[@id="body"]/div[3]/div[3]/main/div[2]/section[1]/div[1]/div[1]')
-for div in main_block:
-    for a in div:
-        print(a.text.encode('utf-8'))
+bot = telebot.TeleBot(TOKEN)
+
+currencies = {
+    'рубль' : 'RUB',
+    'биткоин' : "BTC",
+    "евро" : "EUR",
+    "доллар": "USD",
+    "фунт" : "GBP",
+    "йена" : "JPY",
+    "юань" : "CHY"
+}
+
+@bot.message_handler(commands=['start', 'help'])
+def start_func(message):
+    text = '''Добро пожаловать в обменный бот.
+Введите название первой валюты, второй валюты в которую хотите перевести и сумму в формате "доллар рубль 100"
+Команды:
+/help - помощь
+/currencies - список всех доступных для конвертации валют'''
+    bot.reply_to(message, text)
+
+@bot.message_handler(commands=['currencies'])
+def show_suppurted_currencies(message):
+    text = 'Доступные для конвертации валюты:'
+    for key in currencies:
+        text += "\n" + key.capitalize() + ": " + currencies[key]
+
+    bot.reply_to(message, text)
 
 
-'''
-with open(r'D:\Work\Python\MyData\ReikanodBot_token.txt', 'r') as token:
-    bot = telebot.TeleBot(token.read())
 
-
-@bot.message_handler(content_types=['photo'])
-def start(message):
-    bot.reply_to(message, "Nice meme XDD")
-
-
-bot.polling(none_stop=True, interval=0)
-'''
+bot.polling()
