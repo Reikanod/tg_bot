@@ -1,6 +1,7 @@
 import telebot
 import requests
 import os.path
+import json
 
 if os.path.exists(r'D:\Work\Python\token_reikanod_bot.txt'):
     with open(r'D:\Work\Python\token_reikanod_bot.txt', 'r') as file:
@@ -33,10 +34,12 @@ class Converter:
             if text[0] in currencies.keys() and text[1] in currencies.keys():
                 cur_from = currencies[text[0]]
                 cur_to = currencies[text[1]]
+                amount_from = text[2]
                 result = requests.get(fr'https://min-api.cryptocompare.com/data/price?fsym={cur_from}&tsyms={cur_to}')
-                result = result.content.decode()  # преобразуем ответ в строку
-                result = float(result[result.find(':') + 1:-1])  # находим в строке число
-                result = f'{text[2]} {cur_from}({text[0]}) = {(result * float(text[2])):.2f} {cur_to}({text[1]})'  # в переменную пишем результирующую строку вывода
+                result = result.json() # словарь с парой "USD":100
+                amount_to = float(result[f'{cur_to}'] * amount_from) # запоминаем сумму в итоговой валюте
+                amount_to = format(amount_to, '.2g') # итоговую сумму округляем до двух значимых цифр
+                result = f'{amount_from} {cur_from}({text[0]}) = {amount_to} {cur_to}({text[1]})'
                 bot.send_message(message.chat.id, result)
             else:
                 bot.send_message(message.chat.id,
