@@ -24,29 +24,42 @@ currencies = {
     "вона" : "KRW"
 }
 
-class ConversionExeption(Exception):
+class APIExeption(Exception):
     pass
 class Converter:
     @staticmethod
     def cur_convert(message):
         try:
             text = message.text.lower().split()
-            if text[0] in currencies.keys() and text[1] in currencies.keys():
-                cur_from = currencies[text[0]]
-                cur_to = currencies[text[1]]
-                amount_from = float(text[2])
-                result = requests.get(fr'https://min-api.cryptocompare.com/data/price?fsym={cur_from}&tsyms={cur_to}') # \request.responce
-                result = result.json() # \dict
-                result = result[f'{cur_to}'] #\float
-                amount_to = result * amount_from  # запоминаем сумму в итоговой валюте/ float
-                result = f'{amount_from} {cur_from}({text[0]}) = {amount_to} {cur_to}({text[1]})'  # \string
-                bot.send_message(message.chat.id, result)
+            if len(text) > 3:
+                raise APIExeption("Введено слишком много аргументов")
+            elif len(text) < 3:
+                raise APIExeption("Введено слишком мало аргументов")
             else:
-                bot.send_message(message.chat.id,
-                                 r"Вы ввели данные в неверном формате. Пожалуйста, ознакомьтесь с правилами бота: используйте команду /help")
+                cur_from = text[0]
+                cur_to = text[1]
+            if cur_from not in currencies.keys() or cur_to not in currencies.keys():
+                raise APIExeption(r"Использовано неверное название валюты")
+            try:
+                amount_from = float(text[2])
+            except Exception:
+                raise APIExeption('Введена неверная сумма переводимой валюты')
+
+            if text[0] in currencies.keys() and text[1] in currencies.keys():
+                cur_from_id = currencies[text[0]]
+                cur_to_id = currencies[text[1]]
+                amount_from = float(text[2])
+                result = requests.get(fr'https://min-api.cryptocompare.com/data/price?fsym={cur_from_id}&tsyms={cur_to_id}') # \request.responce
+                result = result.json() # \dict
+                result = result[f'{cur_to_id}'] #\float
+                amount_to = result * amount_from  # запоминаем сумму в итоговой валюте/ float
+                result = f'{amount_from} {cur_from_id}({text[0]}) = {amount_to} {cur_to_id}({text[1]})'  # \string
+                bot.send_message(message.chat.id, result)
+        except APIExeption as ex:
+            bot.send_message(message.chat.id, f'Возникла ошибка: {ex}')
         except Exception:
-            bot.send_message(message.chat.id,
-                             "Возникла неизвестная ошибка, пожалуйста повторите ввод и убедитесь в правильности ввода")
+            bot.send_message(message.chat.id, f'Возникла непредвиденная ошибка. Повторите ввод')
+
 
 @bot.message_handler(commands=['start', 'help'])
 def start_func(message):
