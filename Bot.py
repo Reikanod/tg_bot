@@ -35,12 +35,11 @@ class Converter:
                 cur_from = currencies[text[0]]
                 cur_to = currencies[text[1]]
                 amount_from = float(text[2])
-                result = requests.get(fr'https://min-api.cryptocompare.com/data/price?fsym={cur_from}&tsyms={cur_to}')
-                result = result.json() # словарь с парой "USD":100
-                result = result[f'{cur_to}']
-                amount_to = result * amount_from # запоминаем сумму в итоговой валюте
-                amount_to = format(amount_to, '.2g') # итоговую сумму округляем до двух значимых цифр
-                result = f'{amount_from} {cur_from}({text[0]}) = {amount_to} {cur_to}({text[1]})'
+                result = requests.get(fr'https://min-api.cryptocompare.com/data/price?fsym={cur_from}&tsyms={cur_to}') # \request.responce
+                result = result.json() # \dict
+                result = result[f'{cur_to}'] #\float
+                amount_to = result * amount_from  # запоминаем сумму в итоговой валюте/ float
+                result = f'{amount_from} {cur_from}({text[0]}) = {amount_to} {cur_to}({text[1]})'  # \string
                 bot.send_message(message.chat.id, result)
             else:
                 bot.send_message(message.chat.id,
